@@ -55,8 +55,8 @@ function renderAdminOrders() {
                 <span class="order-status status-${o.status}">${statusText(o.status)}</span>
             </div>
             <div class="order-time">${formatDate(o.created_at)} · ${o.phone}</div>
-            <div class="order-items">${o.items.map(i => `${i.name} × ${i.qty}`).join(', ')}</div>
-            <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">${o.address || 'Самовывоз: ул. Левкова, 9'}</div>
+            <div class="order-items">${o.items.map(i => `${i.name}${i.option ? ` (${i.option})` : ''} × ${i.qty}`).join(', ')}</div>
+            <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">${o.address}</div>
             ${o.comment ? `<div style="font-size:0.85rem;color:var(--gold);margin-top:4px;">💬 ${o.comment}</div>` : ''}
             <div class="order-sum">${o.total} BYN</div>
             <div class="order-actions">
