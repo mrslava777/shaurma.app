@@ -13,23 +13,23 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 
 MENU_ITEMS = [
-    {"id": 1, "name": "Шаурма классическая", "description": "Курица, капуста, огурцы, томаты, чесночный соус, лаваш", "price": 9.00, "category": "shaurma", "emoji": "\U0001F32F", "badge": None, "options": None},
-    {"id": 2, "name": "Шаурма острая", "description": "Курица, капуста, огурцы, томаты, острый соус, перец чили", "price": 10.00, "category": "shaurma", "emoji": "\U0001F336\U0000FE0F", "badge": "Хит", "options": None},
-    {"id": 3, "name": "Шаурма сырная", "description": "Курица, моцарелла, капуста, огурцы, сырный соус", "price": 12.00, "category": "shaurma", "emoji": "\U0001F9C0", "badge": None, "options": None},
-    {"id": 4, "name": "Фалафель", "description": "Фалафельные шарики, овощи, тахини, пита", "price": 8.00, "category": "vegan", "emoji": "\U0001F959", "badge": None, "options": None},
-    {"id": 5, "name": "Бургер классический", "description": "Говяжья котлета, сыр, салат, томаты, соус", "price": 11.00, "category": "burger", "emoji": "\U0001F354", "badge": None, "options": None},
-    {"id": 6, "name": "Хот-дог", "description": "Сосиска, капуста, огурцы, кетчуп, горчица", "price": 8.00, "category": "fast", "emoji": "\U0001F32D", "badge": None, "options": None},
-    {"id": 7, "name": "Блины с мясом", "description": "Домашние блины с куриным фаршем", "price": 7.00, "category": "fast", "emoji": "\U0001F95E", "badge": None, "options": None},
-    {"id": 8, "name": "Пирожок с капустой", "description": "Домашний пирожок, 2 шт", "price": 5.00, "category": "fast", "emoji": "\U0001F95F", "badge": None, "options": None},
-    {"id": 9, "name": "Фри", "description": "Картофель фри, 150г", "price": 6.00, "category": "fast", "emoji": "\U0001F35F", "badge": None, "options": None},
-    {"id": 10, "name": "Кока-кола 0.5л", "description": "Холодная газировка", "price": 4.00, "category": "drink", "emoji": "\U0001F964", "badge": None, "options": None},
+    {"id": 1, "name": "Шаурма классическая", "description": "Курица, капуста, огурцы, томаты, чесночный соус", "price": 9.00, "category": "shaurma", "emoji": "\U0001F32F", "badge": None, "options": None, "image": "https://images.unsplash.com/photo-1644365584070-723349893526?w=400"},
+    {"id": 2, "name": "Шаурма острая", "description": "Курица, острый соус, перец чили", "price": 10.00, "category": "shaurma", "emoji": "\U0001F336\U0000FE0F", "badge": "Хит", "options": None, "image": "https://images.unsplash.com/photo-1561651823-34a0658ebc9d?w=400"},
+    {"id": 3, "name": "Шаурма сырная", "description": "Курица, моцарелла, сырный соус", "price": 12.00, "category": "shaurma", "emoji": "\U0001F9C0", "badge": None, "options": None, "image": "https://images.unsplash.com/photo-1561651823-34a0658ebc9d?w=400"},
+    {"id": 4, "name": "Фалафель", "description": "Фалафельные шарики, овощи, тахини", "price": 8.00, "category": "vegan", "emoji": "\U0001F959", "badge": None, "options": None, "image": "https://images.unsplash.com/photo-1547058881-aa042764c5f2?w=400"},
+    {"id": 5, "name": "Бургер классический", "description": "Говяжья котлета, сыр, салат, томаты", "price": 11.00, "category": "burger", "emoji": "\U0001F354", "badge": None, "options": None, "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400"},
+    {"id": 6, "name": "Хот-дог", "description": "Сосиска, капуста, огурцы, кетчуп", "price": 8.00, "category": "fast", "emoji": "\U0001F32D", "badge": None, "options": None, "image": "https://images.unsplash.com/photo-1612392062126-2f3db5023f3e?w=400"},
+    {"id": 7, "name": "Блины с мясом", "description": "Домашние блины с куриным фаршем", "price": 7.00, "category": "fast", "emoji": "\U0001F95E", "badge": None, "options": None, "image": "https://images.unsplash.com/photo-1587339146550-4d1c3d3c4f9e?w=400"},
+    {"id": 8, "name": "Пирожок с капустой", "description": "Домашний пирожок, 2 шт", "price": 5.00, "category": "fast", "emoji": "\U0001F95F", "badge": None, "options": None, "image": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400"},
+    {"id": 9, "name": "Фри", "description": "Картофель фри, 150г", "price": 6.00, "category": "fast", "emoji": "\U0001F35F", "badge": None, "options": None, "image": "https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=400"},
+    {"id": 10, "name": "Кока-кола 0.5л", "description": "Холодная газировка", "price": 4.00, "category": "drink", "emoji": "\U0001F964", "badge": None, "options": None, "image": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400"},
     {"id": 11, "name": "Пиво разливное", "description": "Выберите сорт и объем", "price": 0, "category": "drink", "emoji": "\U0001F37A", "badge": None, "options": {
         "sorts": ["Баварское", "Ирландский эль", "Медовуха"],
         "volumes": [
             {"label": "0.5 л", "price": 10.00},
             {"label": "1 л", "price": 18.00}
         ]
-    }},
+    }, "image": "https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400"},
 ]
 
 orders = []
