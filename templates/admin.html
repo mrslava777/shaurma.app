@@ -3,51 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Админ-панель — Шаурма на Левкова</title>
+    <title>Админ — Шаурма на Левкова</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body>
-    <div class="app">
-        <header>
-            <h1>🔧 Админ-панель</h1>
-            <div class="subtitle">Шаурма на Левкова · Управление заказами</div>
-        </header>
+<body class="admin-body">
+    <header class="top-header admin-header">
+        <a href="/" class="back-btn">← Назад</a>
+        <div class="header-title">Админ-панель</div>
+        <div style="width:60px;"></div>
+    </header>
 
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('dashboard')">📊 Статистика</div>
-            <div class="tab" onclick="switchTab('orders-admin')">📦 Заказы</div>
-        </div>
-
-        <div id="dashboard" class="section active">
-            <div class="stats-row">
-                <div class="stat-box">
-                    <div class="num" id="statTotal">0</div>
-                    <div class="label">Всего заказов</div>
-                </div>
-                <div class="stat-box">
-                    <div class="num" id="statRevenue">0</div>
-                    <div class="label">Выручка (BYN)</div>
-                </div>
-                <div class="stat-box">
-                    <div class="num" id="statActive">0</div>
-                    <div class="label">Активных</div>
-                </div>
+    <main class="main-content admin-main">
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-num" id="statTotal">0</div>
+                <div class="stat-label">Заказов</div>
             </div>
-            <div class="card">
-                <h3>📈 По статусам</h3>
-                <div id="statusChart" style="margin-top:12px;"></div>
+            <div class="stat-card">
+                <div class="stat-num" id="statRevenue">0</div>
+                <div class="stat-label">Выручка</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="statActive">0</div>
+                <div class="stat-label">Активных</div>
             </div>
         </div>
 
-        <div id="orders-admin" class="section">
-            <div id="adminOrders">
-                <div class="empty">Загрузка заказов...</div>
-            </div>
+        <h3 class="section-title">📦 Заказы</h3>
+        <div id="adminOrders">
+            <div class="loading">Загрузка...</div>
         </div>
-    </div>
+    </main>
 
     <div class="toast" id="toast"></div>
-
     <script src="/static/js/admin.js"></script>
 </body>
 </html>

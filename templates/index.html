@@ -2,90 +2,169 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Шаурма на Левкова</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <div class="app">
-        <header>
-            <h1>🌯 Шаурма на Левкова</h1>
-            <div class="subtitle">ул. Левкова, 9 · Минск · метро Ковальская Слобода</div>
-            <div class="info">
-                <span>🕐 10:00 — 23:00</span>
-                <span>📞 +375 44 566 0688</span>
-                <span>🏃 Только самовывоз</span>
-            </div>
-        </header>
-
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('menu')">🍴 Меню</div>
-            <div class="tab" onclick="switchTab('cart')">🛒 Корзина <span id="cartBadge" class="badge-count">0</span></div>
-            <div class="tab" onclick="switchTab('orders')">📋 Мои заказы</div>
+    <!-- Верхний хедер -->
+    <header class="top-header">
+        <div class="menu-btn" onclick="toggleSidebar()">
+            <span></span><span></span><span></span>
+            <span class="menu-badge">2</span>
         </div>
+        <div class="city-selector">
+            Минск <span class="arrow">▼</span>
+        </div>
+        <div class="search-btn">🔍</div>
+    </header>
 
-        <div id="menu" class="section active">
-            <div class="menu-grid" id="menuGrid">
+    <!-- Сайдбар -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>🌯 Шаурма на Левкова</h3>
+            <p>ул. Левкова, 9 · Минск</p>
+        </div>
+        <div class="sidebar-menu">
+            <a href="/" class="sidebar-item active">🍴 Меню</a>
+            <a href="#" class="sidebar-item" onclick="showSection('cart'); toggleSidebar(); return false;">🛒 Корзина</a>
+            <a href="#" class="sidebar-item" onclick="showSection('orders'); toggleSidebar(); return false;">📋 Мои заказы</a>
+            <a href="/admin" class="sidebar-item">🔧 Админ-панель</a>
+        </div>
+        <div class="sidebar-footer">
+            <p>🕐 10:00 — 23:00</p>
+            <p>📞 +375 44 566 0688</p>
+        </div>
+    </div>
+
+    <!-- Переключатель Доставка/Самовывоз -->
+    <div class="delivery-toggle">
+        <div class="toggle-option active">Самовывоз</div>
+    </div>
+
+    <!-- Адрес -->
+    <div class="address-bar">
+        <span class="pin">📍</span>
+        <span>Минск, ул. Левкова, 9</span>
+    </div>
+
+    <!-- Баннер -->
+    <div class="banner">
+        <div class="banner-content">
+            <span class="banner-badge">Новинка</span>
+            <h2>Фритосы</h2>
+            <p>Сочные картофельные дольки с соусом</p>
+        </div>
+    </div>
+
+    <!-- Категории -->
+    <div class="categories" id="categories">
+        <div class="category active" data-cat="all">Все</div>
+        <div class="category" data-cat="shaurma">Шаурма</div>
+        <div class="category" data-cat="burger">Бургеры</div>
+        <div class="category" data-cat="fast">Закуски</div>
+        <div class="category" data-cat="drink">Напитки</div>
+    </div>
+
+    <!-- Контент -->
+    <main class="main-content" id="mainContent">
+        <!-- Меню -->
+        <div id="menuSection" class="content-section active">
+            <div class="products-grid" id="productsGrid">
                 <div class="loading">Загрузка меню...</div>
             </div>
         </div>
 
-        <div id="cart" class="section">
-            <div class="cart-card">
-                <h2>🛒 Ваш заказ</h2>
+        <!-- Корзина -->
+        <div id="cartSection" class="content-section">
+            <div class="cart-page">
+                <h2>🛒 Корзина</h2>
                 <div id="cartItems"></div>
-                <div id="cartTotal" style="display:none;">
-                    <div class="cart-total">
+                <div id="cartEmpty" class="empty-state">
+                    <div class="empty-icon">🛒</div>
+                    <p>Корзина пуста</p>
+                    <p class="empty-sub">Добавьте что-нибудь из меню</p>
+                </div>
+                <div id="cartForm" style="display:none;">
+                    <div class="cart-total-row">
                         <span>Итого:</span>
-                        <span class="sum" id="totalSum">0 BYN</span>
+                        <span class="total-price" id="totalPrice">0 BYN</span>
                     </div>
-                    <div style="margin-top:16px;">
-                        <div class="form-group">
-                            <label>Ваше имя</label>
-                            <input type="text" id="customerName" placeholder="Иван Иванов">
-                        </div>
-                        <div class="form-group">
-                            <label>Телефон</label>
-                            <input type="tel" id="customerPhone" placeholder="+375 29 123 45 67">
-                        </div>
-                        <div class="form-group">
-                            <label>Комментарий</label>
-                            <input type="text" id="orderComment" placeholder="Без лука, острый соус...">
-                        </div>
-                        <button class="btn-primary" onclick="placeOrder()">Оформить заказ</button>
+                    <div class="form-group">
+                        <label>Ваше имя</label>
+                        <input type="text" id="customerName" placeholder="Иван Иванов">
+                    </div>
+                    <div class="form-group">
+                        <label>Телефон</label>
+                        <input type="tel" id="customerPhone" placeholder="+375 29 123 45 67">
+                    </div>
+                    <div class="form-group">
+                        <label>Комментарий</label>
+                        <input type="text" id="orderComment" placeholder="Без лука, острый соус...">
+                    </div>
+                    <button class="btn-order" onclick="placeOrder()">Оформить заказ</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Заказы -->
+        <div id="ordersSection" class="content-section">
+            <div class="orders-page">
+                <h2>📋 Мои заказы</h2>
+                <div id="ordersList">
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <p>Нет активных заказов</p>
                     </div>
                 </div>
-                <div id="cartEmpty" class="empty">Корзина пуста. Добавьте что-нибудь из меню!</div>
             </div>
         </div>
+    </main>
 
-        <div id="orders" class="section">
-            <div id="ordersList">
-                <div class="empty">Загрузка заказов...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Модалка выбора пива -->
-    <div class="modal-overlay" id="beerModal" onclick="if(event.target===this)closeBeerModal()">
+    <!-- Модалка пива -->
+    <div class="modal-overlay" id="beerModal">
         <div class="modal">
-            <h3>🍺 Выберите пиво</h3>
-            <div class="form-group">
-                <label>Сорт пива</label>
-                <select id="beerSort"></select>
+            <div class="modal-header">
+                <h3>🍺 Выберите пиво</h3>
+                <button class="modal-close" onclick="closeBeerModal()">✕</button>
             </div>
-            <div class="form-group">
-                <label>Объем</label>
-                <div class="volume-options" id="beerVolumes"></div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Сорт пива</label>
+                    <select id="beerSort" class="form-select"></select>
+                </div>
+                <div class="form-group">
+                    <label>Объем</label>
+                    <div class="volume-options" id="beerVolumes"></div>
+                </div>
             </div>
-            <div class="modal-actions">
+            <div class="modal-footer">
                 <button class="btn-secondary" onclick="closeBeerModal()">Отмена</button>
                 <button class="btn-primary" onclick="addBeerToCart()">В корзину</button>
             </div>
         </div>
     </div>
 
+    <!-- Toast -->
     <div class="toast" id="toast"></div>
+
+    <!-- Нижняя навигация -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" onclick="showSection('menu'); return false;">
+            <span class="nav-icon">🍴</span>
+            <span class="nav-label">Меню</span>
+        </a>
+        <a href="#" class="nav-item" onclick="showSection('orders'); return false;">
+            <span class="nav-icon">📋</span>
+            <span class="nav-label">Заказы</span>
+        </a>
+        <a href="#" class="nav-item" onclick="showSection('cart'); return false;">
+            <span class="nav-icon">🛒</span>
+            <span class="nav-label">Корзина</span>
+            <span class="nav-badge" id="navBadge">0</span>
+        </a>
+    </nav>
 
     <script src="/static/js/app.js"></script>
 </body>
