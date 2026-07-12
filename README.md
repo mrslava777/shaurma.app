@@ -1,32 +1,28 @@
-# Shaurma na Levkova - Render.com Deployment
+# Shaurma na Levkova - Render.com (Simple Version)
 
-## Quick Deploy
+No database needed - menu is hardcoded, orders stored in memory.
 
-1. Fork this repo or upload to GitHub
-2. Go to [render.com](https://render.com) and sign up (free)
+## Deploy to Render.com
+
+1. Upload this folder to GitHub as a new repo
+2. Go to https://render.com and sign up with GitHub
 3. Click "New +" → "Web Service"
 4. Connect your GitHub repo
-5. Render will auto-detect `render.yaml`
+5. Render will auto-detect settings from render.yaml
 6. Click "Create Web Service"
 
-## Environment Variables (in Render Dashboard)
+## Settings (if render.yaml not detected)
 
-Go to your service → Environment → Add:
+- **Build Command**: `pip install -r requirements.txt`
+- **Start Command**: `gunicorn app:app`
 
-| Key | Value | Description |
-|-----|-------|-------------|
-| `TELEGRAM_BOT_TOKEN` | your_token | From @BotFather |
-| `TELEGRAM_CHAT_ID` | your_chat_id | From @userinfobot |
+## URLs
 
-## URLs after deploy
+- Client: `https://your-service.onrender.com`
+- Admin: `https://your-service.onrender.com/admin`
 
-- Client: `https://your-service-name.onrender.com`
-- Admin: `https://your-service-name.onrender.com/admin`
+## Optional: Telegram notifications
 
-## Local testing
-
-```bash
-pip install -r requirements.txt
-python app.py
-# Open http://localhost:5000
-```
+In Render Dashboard → Environment, add:
+- `TELEGRAM_BOT_TOKEN` = your token from @BotFather
+- `TELEGRAM_CHAT_ID` = your ID from @userinfobot
