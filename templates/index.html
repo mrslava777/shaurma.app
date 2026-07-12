@@ -14,7 +14,7 @@
             <div class="info">
                 <span>🕐 10:00 — 23:00</span>
                 <span>📞 +375 44 566 0688</span>
-                <span>🛵 Доставка · Самовывоз</span>
+                <span>🏃 Только самовывоз</span>
             </div>
         </header>
 
@@ -49,17 +49,6 @@
                             <input type="tel" id="customerPhone" placeholder="+375 29 123 45 67">
                         </div>
                         <div class="form-group">
-                            <label>Тип заказа</label>
-                            <select id="orderType">
-                                <option value="pickup">Самовывоз (ул. Левкова, 9)</option>
-                                <option value="delivery">Доставка</option>
-                            </select>
-                        </div>
-                        <div class="form-group" id="addressGroup" style="display:none;">
-                            <label>Адрес доставки</label>
-                            <textarea id="deliveryAddress" rows="2" placeholder="г. Минск, ул. ..."></textarea>
-                        </div>
-                        <div class="form-group">
                             <label>Комментарий</label>
                             <input type="text" id="orderComment" placeholder="Без лука, острый соус...">
                         </div>
@@ -73,6 +62,25 @@
         <div id="orders" class="section">
             <div id="ordersList">
                 <div class="empty">Загрузка заказов...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка выбора пива -->
+    <div class="modal-overlay" id="beerModal" style="display:none;">
+        <div class="modal">
+            <h3>🍺 Выберите пиво</h3>
+            <div class="form-group">
+                <label>Сорт</label>
+                <select id="beerSort"></select>
+            </div>
+            <div class="form-group">
+                <label>Объем</label>
+                <div class="volume-options" id="beerVolumes"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeBeerModal()">Отмена</button>
+                <button class="btn-primary" onclick="addBeerToCart()">В корзину</button>
             </div>
         </div>
     </div>
