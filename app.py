@@ -13,18 +13,23 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 
 MENU_ITEMS = [
-    {"id": 1, "name": "Shaurma Classic", "description": "Chicken, cabbage, cucumbers, tomatoes, garlic sauce, lavash", "price": 9.00, "category": "shaurma", "emoji": "\U0001F32F", "badge": None},
-    {"id": 2, "name": "Shaurma Spicy", "description": "Chicken, cabbage, cucumbers, tomatoes, spicy sauce, chili pepper", "price": 10.00, "category": "shaurma", "emoji": "\U0001F336\U0000FE0F", "badge": "Hit"},
-    {"id": 3, "name": "Shaurma Cheese", "description": "Chicken, mozzarella, cabbage, cucumbers, cheese sauce", "price": 12.00, "category": "shaurma", "emoji": "\U0001F9C0", "badge": None},
-    {"id": 4, "name": "Falafel", "description": "Falafel balls, vegetables, tahini, pita", "price": 8.00, "category": "vegan", "emoji": "\U0001F959", "badge": None},
-    {"id": 5, "name": "Classic Burger", "description": "Beef patty, cheese, lettuce, tomatoes, sauce", "price": 11.00, "category": "burger", "emoji": "\U0001F354", "badge": None},
-    {"id": 6, "name": "Hot Dog", "description": "Sausage, cabbage, cucumbers, ketchup, mustard", "price": 8.00, "category": "fast", "emoji": "\U0001F32D", "badge": None},
-    {"id": 7, "name": "Pancakes with Meat", "description": "Homemade pancakes with chicken filling", "price": 7.00, "category": "fast", "emoji": "\U0001F95E", "badge": None},
-    {"id": 8, "name": "Draft Beer 0.5L", "description": "Bavarian / Irish Ale / Mead", "price": 10.00, "category": "drink", "emoji": "\U0001F37A", "badge": None},
-    {"id": 9, "name": "Draft Beer 1L", "description": "Bavarian / Irish Ale / Mead", "price": 18.00, "category": "drink", "emoji": "\U0001F37A", "badge": None},
-    {"id": 10, "name": "Coca-Cola 0.5L", "description": "Cold soda", "price": 4.00, "category": "drink", "emoji": "\U0001F964", "badge": None},
-    {"id": 11, "name": "Cabbage Pie", "description": "Homemade pie, 2 pcs", "price": 5.00, "category": "fast", "emoji": "\U0001F95F", "badge": None},
-    {"id": 12, "name": "Fries", "description": "French fries, 150g", "price": 6.00, "category": "fast", "emoji": "\U0001F35F", "badge": None},
+    {"id": 1, "name": "Шаурма классическая", "description": "Курица, капуста, огурцы, томаты, чесночный соус, лаваш", "price": 9.00, "category": "shaurma", "emoji": "\U0001F32F", "badge": None, "options": None},
+    {"id": 2, "name": "Шаурма острая", "description": "Курица, капуста, огурцы, томаты, острый соус, перец чили", "price": 10.00, "category": "shaurma", "emoji": "\U0001F336\U0000FE0F", "badge": "Хит", "options": None},
+    {"id": 3, "name": "Шаурма сырная", "description": "Курица, моцарелла, капуста, огурцы, сырный соус", "price": 12.00, "category": "shaurma", "emoji": "\U0001F9C0", "badge": None, "options": None},
+    {"id": 4, "name": "Фалафель", "description": "Фалафельные шарики, овощи, тахини, пита", "price": 8.00, "category": "vegan", "emoji": "\U0001F959", "badge": None, "options": None},
+    {"id": 5, "name": "Бургер классический", "description": "Говяжья котлета, сыр, салат, томаты, соус", "price": 11.00, "category": "burger", "emoji": "\U0001F354", "badge": None, "options": None},
+    {"id": 6, "name": "Хот-дог", "description": "Сосиска, капуста, огурцы, кетчуп, горчица", "price": 8.00, "category": "fast", "emoji": "\U0001F32D", "badge": None, "options": None},
+    {"id": 7, "name": "Блины с мясом", "description": "Домашние блины с куриным фаршем", "price": 7.00, "category": "fast", "emoji": "\U0001F95E", "badge": None, "options": None},
+    {"id": 8, "name": "Пирожок с капустой", "description": "Домашний пирожок, 2 шт", "price": 5.00, "category": "fast", "emoji": "\U0001F95F", "badge": None, "options": None},
+    {"id": 9, "name": "Фри", "description": "Картофель фри, 150г", "price": 6.00, "category": "fast", "emoji": "\U0001F35F", "badge": None, "options": None},
+    {"id": 10, "name": "Кока-кола 0.5л", "description": "Холодная газировка", "price": 4.00, "category": "drink", "emoji": "\U0001F964", "badge": None, "options": None},
+    {"id": 11, "name": "Пиво разливное", "description": "Выберите сорт и объем", "price": 0, "category": "drink", "emoji": "\U0001F37A", "badge": None, "options": {
+        "sorts": ["Баварское", "Ирландский эль", "Медовуха"],
+        "volumes": [
+            {"label": "0.5 л", "price": 10.00},
+            {"label": "1 л", "price": 18.00}
+        ]
+    }},
 ]
 
 orders = []
@@ -55,11 +60,9 @@ def create_order():
     global next_order_id
     data = request.get_json()
     if not data.get("customer_name") or not data.get("phone"):
-        return jsonify({"error": "Please provide name and phone"}), 400
-    if data.get("order_type") == "delivery" and not data.get("address"):
-        return jsonify({"error": "Please provide delivery address"}), 400
+        return jsonify({"error": "Укажите имя и телефон"}), 400
     if not data.get("items"):
-        return jsonify({"error": "Cart is empty"}), 400
+        return jsonify({"error": "Корзина пуста"}), 400
     order_number = f"SL-{datetime.now().strftime('%y%m%d')}-{next_order_id:03d}"
     next_order_id += 1
     order = {
@@ -67,8 +70,8 @@ def create_order():
         "order_number": order_number,
         "customer_name": data["customer_name"],
         "phone": data["phone"],
-        "order_type": data["order_type"],
-        "address": data.get("address", ""),
+        "order_type": "pickup",
+        "address": "ул. Левкова, 9",
         "comment": data.get("comment", ""),
         "items": data["items"],
         "total": data["total"],
@@ -77,11 +80,9 @@ def create_order():
         "updated_at": None
     }
     orders.append(order)
-    items_text = "\n".join([f"- {i['name']} x {i['qty']} = {i['price'] * i['qty']} BYN" for i in data["items"]])
-    delivery_type = "Delivery" if data["order_type"] == "delivery" else "Pickup"
-    address_text = f"\nAddress: {data.get('address', 'Levkova st., 9')}" if data.get("address") else ""
-    comment_text = f"\nComment: {data['comment']}" if data.get("comment") else ""
-    telegram_msg = f"NEW ORDER #{order_number}\n\nCustomer: {data['customer_name']}\nPhone: {data['phone']}\nType: {delivery_type}{address_text}{comment_text}\n\nItems:\n{items_text}\n\nTotal: {data['total']} BYN"
+    items_text = "\n".join([f"- {i['name']}" + (f" ({i.get('option','')})" if i.get("option") else "") + f" x {i['qty']} = {i['price'] * i['qty']} BYN" for i in data["items"]])
+    comment_text = f"\nКомментарий: {data['comment']}" if data.get("comment") else ""
+    telegram_msg = f"НОВЫЙ ЗАКАЗ #{order_number}\n\nКлиент: {data['customer_name']}\nТелефон: {data['phone']}\nСамовывоз: ул. Левкова, 9{comment_text}\n\nСостав:\n{items_text}\n\nИтого: {data['total']} BYN"
     send_telegram(telegram_msg)
     return jsonify({"success": True, "order_id": order["id"], "order_number": order_number})
 
@@ -94,14 +95,15 @@ def update_status(order_id):
     data = request.get_json()
     new_status = data.get("status")
     if new_status not in ["new", "cooking", "ready", "done"]:
-        return jsonify({"error": "Invalid status"}), 400
+        return jsonify({"error": "Неверный статус"}), 400
     for order in orders:
         if order["id"] == order_id:
             order["status"] = new_status
             order["updated_at"] = datetime.now().isoformat()
-            send_telegram(f"Order #{order['order_number']}\nStatus: {new_status}")
+            status_ru = {"new": "Новый", "cooking": "Готовится", "ready": "Готов", "done": "Выдан"}
+            send_telegram(f"Заказ #{order['order_number']}\nСтатус: {status_ru.get(new_status, new_status)}")
             return jsonify({"success": True})
-    return jsonify({"error": "Order not found"}), 404
+    return jsonify({"error": "Заказ не найден"}), 404
 
 @app.route("/api/orders/<int:order_id>", methods=["DELETE"])
 def delete_order(order_id):
