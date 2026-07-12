@@ -20,38 +20,91 @@ function renderMenu() {
         return;
     }
     grid.innerHTML = menuItems.map(item => {
-        const qty = cart[item.id] || 0;
-        const hasOptions = item.options !== null;
-        return `
-            <div class="menu-item" onclick="${hasOptions ? `openBeerModal(${item.id})` : `updateCart(${item.id}, 1)`}">
-                ${item.badge ? `<span class="badge-new">${item.badge}</span>` : ''}
-                <span class="emoji">${item.emoji}</span>
-                <h3>${item.name}</h3>
-                <div class="desc">${item.description}</div>
-                <div class="price-row">
-                    <div class="price">${hasOptions ? 'от ' + item.options.volumes[0].price : item.price} <span>BYN</span></div>
-                    ${!hasOptions ? `
-                    <div class="qty-control" onclick="event.stopPropagation()">
-                        <button onclick="updateCart(${item.id}, -1)">−</button>
-                        <span class="qty" id="qty-${item.id}">${qty}</span>
-                        <button onclick="updateCart(${item.id}, 1)">+</button>
-                    </div>` : `<div style="color:var(--accent);font-size:0.85rem;font-weight:500;">⚙️ Выбрать</div>`}
+        const qty = getTotalQty(item.id);
+        const hasOptions = item.options !== null && item.options !== undefined;
+        const minPrice = hasOptions ? item.options.volumes[0].price : item.price;
+
+        if (hasOptions) {
+            return `
+                <div class="menu-item" data-beer-id="${item.id}">
+                    ${item.badge ? `<span class="badge-new">${item.badge}</span>` : ''}
+                    <span class="emoji">${item.emoji}</span>
+                    <h3>${item.name}</h3>
+                    <div class="desc">${item.description}</div>
+                    <div class="price-row">
+                        <div class="price">от ${minPrice} <span>BYN</span></div>
+                        <div style="color:var(--accent);font-size:0.85rem;font-weight:500;">⚙️ Выбрать</div>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            return `
+                <div class="menu-item" data-item-id="${item.id}">
+                    ${item.badge ? `<span class="badge-new">${item.badge}</span>` : ''}
+                    <span class="emoji">${item.emoji}</span>
+                    <h3>${item.name}</h3>
+                    <div class="desc">${item.description}</div>
+                    <div class="price-row">
+                        <div class="price">${item.price} <span>BYN</span></div>
+                        <div class="qty-control">
+                            <button class="btn-minus" data-item-id="${item.id}">−</button>
+                            <span class="qty" id="qty-${item.id}">${qty}</span>
+                            <button class="btn-plus" data-item-id="${item.id}">+</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
     }).join('');
+
+    // Attach event listeners after render
+    attachMenuListeners();
+}
+
+function attachMenuListeners() {
+    // Beer items
+    document.querySelectorAll('[data-beer-id]').forEach(el => {
+        el.addEventListener('click', function(e) {
+            const id = parseInt(this.getAttribute('data-beer-id'));
+            openBeerModal(id);
+        });
+    });
+
+    // Regular items - plus buttons
+    document.querySelectorAll('.btn-plus').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const id = parseInt(this.getAttribute('data-item-id'));
+            updateCart(id, 1);
+        });
+    });
+
+    // Regular items - minus buttons
+    document.querySelectorAll('.btn-minus').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const id = parseInt(this.getAttribute('data-item-id'));
+            updateCart(id, -1);
+        });
+    });
+}
+
+function getTotalQty(itemId) {
+    return Object.entries(cart)
+        .filter(([k, v]) => v.itemId === itemId)
+        .reduce((s, [k, v]) => s + v.qty, 0);
 }
 
 function updateCart(id, delta, optionKey) {
     const item = menuItems.find(i => i.id === id);
     const key = optionKey || id;
 
-    if (!cart[key]) cart[key] = { itemId: id, qty: 0, option: optionKey || null };
+    if (!cart[key]) cart[key] = { itemId: id, qty: 0, option: optionKey ? cart[key]?.option : null, price: item.price };
     cart[key].qty += delta;
     if (cart[key].qty <= 0) delete cart[key];
 
     const qtyEl = document.getElementById(`qty-${id}`);
-    if (qtyEl && !optionKey) qtyEl.textContent = Object.entries(cart).filter(([k,v]) => v.itemId === id).reduce((s,[k,v]) => s + v.qty, 0);
+    if (qtyEl) qtyEl.textContent = getTotalQty(id);
 
     updateCartBadge();
     if (document.getElementById('cart').classList.contains('active')) renderCart();
@@ -76,19 +129,22 @@ function openBeerModal(itemId) {
 
     const volumesDiv = document.getElementById('beerVolumes');
     volumesDiv.innerHTML = item.options.volumes.map((v, i) => `
-        <div class="volume-option ${i === 0 ? 'selected' : ''}" onclick="selectVolume(this, ${i})">
+        <div class="volume-option ${i === 0 ? 'selected' : ''}" data-vol-index="${i}">
             ${v.label}
             <span class="vol-price">${v.price} BYN</span>
         </div>
     `).join('');
 
-    document.getElementById('beerModal').style.display = 'flex';
-}
+    // Attach volume listeners
+    document.querySelectorAll('.volume-option').forEach(el => {
+        el.addEventListener('click', function() {
+            document.querySelectorAll('.volume-option').forEach(e => e.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedBeerVolume = currentBeerItem.options.volumes[parseInt(this.getAttribute('data-vol-index'))];
+        });
+    });
 
-function selectVolume(el, index) {
-    document.querySelectorAll('.volume-option').forEach(e => e.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedBeerVolume = currentBeerItem.options.volumes[index];
+    document.getElementById('beerModal').style.display = 'flex';
 }
 
 function closeBeerModal() {
@@ -101,8 +157,8 @@ function addBeerToCart() {
     if (!currentBeerItem || !selectedBeerVolume) return;
 
     const sort = document.getElementById('beerSort').value;
-    const optionKey = `${currentBeerItem.id}_${sort}_${selectedBeerVolume.label}`;
     const optionLabel = `${sort}, ${selectedBeerVolume.label}`;
+    const optionKey = `beer_${currentBeerItem.id}_${sort}_${selectedBeerVolume.label}`;
 
     if (!cart[optionKey]) {
         cart[optionKey] = { itemId: currentBeerItem.id, qty: 0, option: optionLabel, price: selectedBeerVolume.price };
@@ -147,15 +203,31 @@ function renderCart() {
                     <div class="cart-item-price">${price} BYN × ${cartItem.qty} = ${sum} BYN</div>
                 </div>
                 <div class="qty-control">
-                    <button onclick="updateCart(${cartItem.itemId}, -1, '${key}')">−</button>
+                    <button class="cart-minus" data-cart-key="${key}">−</button>
                     <span class="qty">${cartItem.qty}</span>
-                    <button onclick="updateCart(${cartItem.itemId}, 1, '${key}')">+</button>
+                    <button class="cart-plus" data-cart-key="${key}">+</button>
                 </div>
             </div>
         `;
     }).join('');
 
     document.getElementById('totalSum').textContent = total + ' BYN';
+
+    // Attach cart listeners
+    document.querySelectorAll('.cart-minus').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const key = this.getAttribute('data-cart-key');
+            const cartItem = cart[key];
+            updateCart(cartItem.itemId, -1, key);
+        });
+    });
+    document.querySelectorAll('.cart-plus').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const key = this.getAttribute('data-cart-key');
+            const cartItem = cart[key];
+            updateCart(cartItem.itemId, 1, key);
+        });
+    });
 }
 
 async function placeOrder() {
@@ -267,11 +339,6 @@ function showToast(msg) {
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2500);
 }
-
-// Close modal on overlay click
-document.getElementById('beerModal').addEventListener('click', function(e) {
-    if (e.target === this) closeBeerModal();
-});
 
 // Init
 loadMenu();
