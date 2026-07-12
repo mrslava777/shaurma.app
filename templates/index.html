@@ -67,11 +67,11 @@
     </div>
 
     <!-- Модалка выбора пива -->
-    <div class="modal-overlay" id="beerModal" style="display:none;">
+    <div class="modal-overlay" id="beerModal" onclick="if(event.target===this)closeBeerModal()">
         <div class="modal">
             <h3>🍺 Выберите пиво</h3>
             <div class="form-group">
-                <label>Сорт</label>
+                <label>Сорт пива</label>
                 <select id="beerSort"></select>
             </div>
             <div class="form-group">
