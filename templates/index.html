@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Шаурма на Левкова</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app">
+        <header>
+            <h1>🌯 Шаурма на Левкова</h1>
+            <div class="subtitle">ул. Левкова, 9 · Минск · метро Ковальская Слобода</div>
+            <div class="info">
+                <span>🕐 10:00 — 23:00</span>
+                <span>📞 +375 44 566 0688</span>
+                <span>🛵 Доставка · Самовывоз</span>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('menu')">🍴 Меню</div>
+            <div class="tab" onclick="switchTab('cart')">🛒 Корзина <span id="cartBadge" class="badge-count">0</span></div>
+            <div class="tab" onclick="switchTab('orders')">📋 Мои заказы</div>
+        </div>
+
+        <div id="menu" class="section active">
+            <div class="menu-grid" id="menuGrid">
+                <div class="loading">Загрузка меню...</div>
+            </div>
+        </div>
+
+        <div id="cart" class="section">
+            <div class="cart-card">
+                <h2>🛒 Ваш заказ</h2>
+                <div id="cartItems"></div>
+                <div id="cartTotal" style="display:none;">
+                    <div class="cart-total">
+                        <span>Итого:</span>
+                        <span class="sum" id="totalSum">0 BYN</span>
+                    </div>
+                    <div style="margin-top:16px;">
+                        <div class="form-group">
+                            <label>Ваше имя</label>
+                            <input type="text" id="customerName" placeholder="Иван Иванов">
+                        </div>
+                        <div class="form-group">
+                            <label>Телефон</label>
+                            <input type="tel" id="customerPhone" placeholder="+375 29 123 45 67">
+                        </div>
+                        <div class="form-group">
+                            <label>Тип заказа</label>
+                            <select id="orderType">
+                                <option value="pickup">Самовывоз (ул. Левкова, 9)</option>
+                                <option value="delivery">Доставка</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="addressGroup" style="display:none;">
+                            <label>Адрес доставки</label>
+                            <textarea id="deliveryAddress" rows="2" placeholder="г. Минск, ул. ..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Комментарий</label>
+                            <input type="text" id="orderComment" placeholder="Без лука, острый соус...">
+                        </div>
+                        <button class="btn-primary" onclick="placeOrder()">Оформить заказ</button>
+                    </div>
+                </div>
+                <div id="cartEmpty" class="empty">Корзина пуста. Добавьте что-нибудь из меню!</div>
+            </div>
+        </div>
+
+        <div id="orders" class="section">
+            <div id="ordersList">
+                <div class="empty">Загрузка заказов...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
