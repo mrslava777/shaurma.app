@@ -2,54 +2,62 @@ let menuItems = [];
 let cart = {};
 let currentBeerItem = null;
 let selectedBeerVolume = null;
+let currentCategory = 'all';
 
 async function loadMenu() {
     try {
         const res = await fetch('/api/menu');
         menuItems = await res.json();
         renderMenu();
+        attachCategoryListeners();
     } catch (e) {
-        document.getElementById('menuGrid').innerHTML = '<div class="empty">Ошибка загрузки меню</div>';
+        document.getElementById('productsGrid').innerHTML = '<div class="loading">Ошибка загрузки</div>';
     }
 }
 
 function renderMenu() {
-    const grid = document.getElementById('menuGrid');
-    if (menuItems.length === 0) {
-        grid.innerHTML = '<div class="empty">Меню пусто</div>';
+    const grid = document.getElementById('productsGrid');
+    const filtered = currentCategory === 'all' 
+        ? menuItems 
+        : menuItems.filter(i => i.category === currentCategory);
+
+    if (filtered.length === 0) {
+        grid.innerHTML = '<div class="loading">Нет товаров</div>';
         return;
     }
-    grid.innerHTML = menuItems.map(item => {
-        const qty = getTotalQty(item.id);
+
+    grid.innerHTML = filtered.map(item => {
         const hasOptions = item.options !== null && item.options !== undefined;
-        const minPrice = hasOptions ? item.options.volumes[0].price : item.price;
+        const qty = getTotalQty(item.id);
 
         if (hasOptions) {
             return `
-                <div class="menu-item" data-beer-id="${item.id}">
-                    ${item.badge ? `<span class="badge-new">${item.badge}</span>` : ''}
-                    <span class="emoji">${item.emoji}</span>
-                    <h3>${item.name}</h3>
-                    <div class="desc">${item.description}</div>
-                    <div class="price-row">
-                        <div class="price">от ${minPrice} <span>BYN</span></div>
-                        <div style="color:var(--accent);font-size:0.85rem;font-weight:500;">⚙️ Выбрать</div>
+                <div class="product-card" data-beer-id="${item.id}">
+                    <img src="${item.image}" class="product-image" alt="${item.name}" loading="lazy">
+                    <div class="product-info">
+                        <div class="product-name">${item.name}</div>
+                        <div class="product-desc">${item.description}</div>
+                        <div class="product-price-row">
+                            <div class="product-price">от ${item.options.volumes[0].price} <span>BYN</span></div>
+                        </div>
+                        <button class="btn-select">Выбрать</button>
                     </div>
                 </div>
             `;
         } else {
             return `
-                <div class="menu-item" data-item-id="${item.id}">
-                    ${item.badge ? `<span class="badge-new">${item.badge}</span>` : ''}
-                    <span class="emoji">${item.emoji}</span>
-                    <h3>${item.name}</h3>
-                    <div class="desc">${item.description}</div>
-                    <div class="price-row">
-                        <div class="price">${item.price} <span>BYN</span></div>
-                        <div class="qty-control">
-                            <button class="btn-minus" data-item-id="${item.id}">−</button>
-                            <span class="qty" id="qty-${item.id}">${qty}</span>
-                            <button class="btn-plus" data-item-id="${item.id}">+</button>
+                <div class="product-card" data-item-id="${item.id}">
+                    <img src="${item.image}" class="product-image" alt="${item.name}" loading="lazy">
+                    <div class="product-info">
+                        <div class="product-name">${item.name}</div>
+                        <div class="product-desc">${item.description}</div>
+                        <div class="qty-row">
+                            <div class="product-price">${item.price} <span>BYN</span></div>
+                            <div class="qty-control-inline">
+                                <button class="btn-minus" data-item-id="${item.id}">−</button>
+                                <span class="qty-val" id="qty-${item.id}">${qty}</span>
+                                <button class="btn-plus" data-item-id="${item.id}">+</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -57,20 +65,19 @@ function renderMenu() {
         }
     }).join('');
 
-    // Attach event listeners after render
-    attachMenuListeners();
+    attachProductListeners();
 }
 
-function attachMenuListeners() {
-    // Beer items
+function attachProductListeners() {
     document.querySelectorAll('[data-beer-id]').forEach(el => {
         el.addEventListener('click', function(e) {
-            const id = parseInt(this.getAttribute('data-beer-id'));
-            openBeerModal(id);
+            if (e.target.closest('.btn-select')) {
+                const id = parseInt(this.getAttribute('data-beer-id'));
+                openBeerModal(id);
+            }
         });
     });
 
-    // Regular items - plus buttons
     document.querySelectorAll('.btn-plus').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -79,12 +86,22 @@ function attachMenuListeners() {
         });
     });
 
-    // Regular items - minus buttons
     document.querySelectorAll('.btn-minus').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             const id = parseInt(this.getAttribute('data-item-id'));
             updateCart(id, -1);
+        });
+    });
+}
+
+function attachCategoryListeners() {
+    document.querySelectorAll('.category').forEach(cat => {
+        cat.addEventListener('click', function() {
+            document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            currentCategory = this.getAttribute('data-cat');
+            renderMenu();
         });
     });
 }
@@ -97,26 +114,28 @@ function getTotalQty(itemId) {
 
 function updateCart(id, delta, optionKey) {
     const item = menuItems.find(i => i.id === id);
-    const key = optionKey || id;
+    const key = optionKey || String(id);
 
-    if (!cart[key]) cart[key] = { itemId: id, qty: 0, option: optionKey ? cart[key]?.option : null, price: item.price };
+    if (!cart[key]) {
+        cart[key] = { itemId: id, qty: 0, option: null, price: item.price };
+    }
     cart[key].qty += delta;
     if (cart[key].qty <= 0) delete cart[key];
 
     const qtyEl = document.getElementById(`qty-${id}`);
     if (qtyEl) qtyEl.textContent = getTotalQty(id);
 
-    updateCartBadge();
-    if (document.getElementById('cart').classList.contains('active')) renderCart();
+    updateNavBadge();
+    if (document.getElementById('cartSection').classList.contains('active')) renderCart();
     if (delta > 0) showToast(`+1 ${item.name}`);
 }
 
-function updateCartBadge() {
+function updateNavBadge() {
     const total = Object.values(cart).reduce((a, b) => a + b.qty, 0);
-    document.getElementById('cartBadge').textContent = total;
+    document.getElementById('navBadge').textContent = total;
 }
 
-// Beer Modal
+// ===== BEER MODAL =====
 function openBeerModal(itemId) {
     const item = menuItems.find(i => i.id === itemId);
     if (!item || !item.options) return;
@@ -129,26 +148,25 @@ function openBeerModal(itemId) {
 
     const volumesDiv = document.getElementById('beerVolumes');
     volumesDiv.innerHTML = item.options.volumes.map((v, i) => `
-        <div class="volume-option ${i === 0 ? 'selected' : ''}" data-vol-index="${i}">
-            ${v.label}
+        <div class="vol-option ${i === 0 ? 'selected' : ''}" data-vol-index="${i}">
+            <span class="vol-label">${v.label}</span>
             <span class="vol-price">${v.price} BYN</span>
         </div>
     `).join('');
 
-    // Attach volume listeners
-    document.querySelectorAll('.volume-option').forEach(el => {
+    document.querySelectorAll('.vol-option').forEach(el => {
         el.addEventListener('click', function() {
-            document.querySelectorAll('.volume-option').forEach(e => e.classList.remove('selected'));
+            document.querySelectorAll('.vol-option').forEach(e => e.classList.remove('selected'));
             this.classList.add('selected');
             selectedBeerVolume = currentBeerItem.options.volumes[parseInt(this.getAttribute('data-vol-index'))];
         });
     });
 
-    document.getElementById('beerModal').style.display = 'flex';
+    document.getElementById('beerModal').classList.add('active');
 }
 
 function closeBeerModal() {
-    document.getElementById('beerModal').style.display = 'none';
+    document.getElementById('beerModal').classList.remove('active');
     currentBeerItem = null;
     selectedBeerVolume = null;
 }
@@ -165,28 +183,29 @@ function addBeerToCart() {
     }
     cart[optionKey].qty += 1;
 
-    updateCartBadge();
+    updateNavBadge();
     renderMenu();
-    if (document.getElementById('cart').classList.contains('active')) renderCart();
+    if (document.getElementById('cartSection').classList.contains('active')) renderCart();
     showToast(`+1 ${currentBeerItem.name} (${optionLabel})`);
     closeBeerModal();
 }
 
+// ===== CART =====
 function renderCart() {
     const itemsDiv = document.getElementById('cartItems');
-    const totalDiv = document.getElementById('cartTotal');
     const emptyDiv = document.getElementById('cartEmpty');
+    const formDiv = document.getElementById('cartForm');
     const keys = Object.keys(cart);
 
     if (keys.length === 0) {
         itemsDiv.innerHTML = '';
-        totalDiv.style.display = 'none';
         emptyDiv.style.display = 'block';
+        formDiv.style.display = 'none';
         return;
     }
 
     emptyDiv.style.display = 'none';
-    totalDiv.style.display = 'block';
+    formDiv.style.display = 'block';
 
     let total = 0;
     itemsDiv.innerHTML = keys.map(key => {
@@ -196,29 +215,30 @@ function renderCart() {
         const sum = price * cartItem.qty;
         total += sum;
         return `
-            <div class="cart-item">
-                <div class="cart-item-info">
-                    <div class="cart-item-name">${item.emoji} ${item.name} × ${cartItem.qty}</div>
+            <div class="cart-item-card">
+                <img src="${item.image}" class="cart-item-img" alt="${item.name}">
+                <div class="cart-item-details">
+                    <div class="cart-item-name">${item.name}</div>
                     ${cartItem.option ? `<div class="cart-item-option">${cartItem.option}</div>` : ''}
                     <div class="cart-item-price">${price} BYN × ${cartItem.qty} = ${sum} BYN</div>
                 </div>
-                <div class="qty-control">
+                <div class="cart-item-actions">
                     <button class="cart-minus" data-cart-key="${key}">−</button>
-                    <span class="qty">${cartItem.qty}</span>
+                    <span class="qty-val">${cartItem.qty}</span>
                     <button class="cart-plus" data-cart-key="${key}">+</button>
                 </div>
             </div>
         `;
     }).join('');
 
-    document.getElementById('totalSum').textContent = total + ' BYN';
+    document.getElementById('totalPrice').textContent = total + ' BYN';
 
-    // Attach cart listeners
     document.querySelectorAll('.cart-minus').forEach(btn => {
         btn.addEventListener('click', function() {
             const key = this.getAttribute('data-cart-key');
             const cartItem = cart[key];
             updateCart(cartItem.itemId, -1, key);
+            renderCart();
         });
     });
     document.querySelectorAll('.cart-plus').forEach(btn => {
@@ -226,6 +246,7 @@ function renderCart() {
             const key = this.getAttribute('data-cart-key');
             const cartItem = cart[key];
             updateCart(cartItem.itemId, 1, key);
+            renderCart();
         });
     });
 }
@@ -246,32 +267,23 @@ async function placeOrder() {
     });
     const total = items.reduce((s, i) => s + i.price * i.qty, 0);
 
-    const orderData = {
-        customer_name: name,
-        phone: phone,
-        items: items,
-        total: total,
-        comment: comment
-    };
-
     try {
         const res = await fetch('/api/orders', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
+            body: JSON.stringify({ customer_name: name, phone: phone, items: items, total: total, comment: comment })
         });
         const data = await res.json();
 
         if (data.success) {
             cart = {};
             renderMenu();
-            updateCartBadge();
-            renderCart();
+            updateNavBadge();
             document.getElementById('customerName').value = '';
             document.getElementById('customerPhone').value = '';
             document.getElementById('orderComment').value = '';
             showToast(`✅ Заказ #${data.order_number} оформлен!`);
-            switchTab('orders');
+            showSection('orders');
             loadOrders();
         } else {
             showToast('❌ ' + (data.error || 'Ошибка'));
@@ -281,13 +293,14 @@ async function placeOrder() {
     }
 }
 
+// ===== ORDERS =====
 async function loadOrders() {
     try {
         const res = await fetch('/api/orders');
         const orders = await res.json();
         renderOrders(orders);
     } catch (e) {
-        document.getElementById('ordersList').innerHTML = '<div class="empty">Ошибка загрузки</div>';
+        document.getElementById('ordersList').innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>Ошибка загрузки</p></div>';
     }
 }
 
@@ -295,18 +308,18 @@ function renderOrders(orders) {
     const list = document.getElementById('ordersList');
     const myOrders = orders.filter(o => o.status !== 'done');
     if (myOrders.length === 0) {
-        list.innerHTML = '<div class="empty">У вас пока нет активных заказов</div>';
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>Нет активных заказов</p></div>';
         return;
     }
     list.innerHTML = myOrders.map(o => `
         <div class="order-card" style="border-left-color: ${statusColor(o.status)};">
             <div class="order-header">
-                <span class="order-id">Заказ #${o.order_number}</span>
+                <span class="order-num">#${o.order_number}</span>
                 <span class="order-status status-${o.status}">${statusText(o.status)}</span>
             </div>
             <div class="order-time">${formatDate(o.created_at)}</div>
             <div class="order-items">${o.items.map(i => `${i.name}${i.option ? ` (${i.option})` : ''} × ${i.qty}`).join(', ')}</div>
-            <div class="order-sum">${o.total} BYN · 🏃 Самовывоз</div>
+            <div class="order-total">${o.total} BYN · 🏃 Самовывоз</div>
         </div>
     `).join('');
 }
@@ -316,7 +329,7 @@ function statusText(s) {
 }
 
 function statusColor(s) {
-    return { new: '#fbbf24', cooking: '#3b82f6', ready: '#10b981', done: '#6b7280' }[s] || '#6b7280';
+    return { new: '#ff9800', cooking: '#2196f3', ready: '#4caf50', done: '#9e9e9e' }[s] || '#9e9e9e';
 }
 
 function formatDate(iso) {
@@ -324,13 +337,28 @@ function formatDate(iso) {
     return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
-function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    event.target.classList.add('active');
-    document.getElementById(tab).classList.add('active');
-    if (tab === 'cart') renderCart();
-    if (tab === 'orders') loadOrders();
+// ===== NAVIGATION =====
+function showSection(section) {
+    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+    if (section === 'menu') {
+        document.getElementById('menuSection').classList.add('active');
+        document.querySelectorAll('.nav-item')[0].classList.add('active');
+    } else if (section === 'orders') {
+        document.getElementById('ordersSection').classList.add('active');
+        document.querySelectorAll('.nav-item')[1].classList.add('active');
+        loadOrders();
+    } else if (section === 'cart') {
+        document.getElementById('cartSection').classList.add('active');
+        document.querySelectorAll('.nav-item')[2].classList.add('active');
+        renderCart();
+    }
+}
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('active');
+    document.getElementById('sidebarOverlay').classList.toggle('active');
 }
 
 function showToast(msg) {
@@ -339,6 +367,11 @@ function showToast(msg) {
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2500);
 }
+
+// Close modal on overlay click
+document.getElementById('beerModal').addEventListener('click', function(e) {
+    if (e.target === this) closeBeerModal();
+});
 
 // Init
 loadMenu();
